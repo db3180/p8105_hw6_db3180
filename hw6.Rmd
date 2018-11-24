@@ -1,0 +1,11 @@
+---
+title: "p8015_hw6"
+author: "Divya Bisht"
+date: "11/24/2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
