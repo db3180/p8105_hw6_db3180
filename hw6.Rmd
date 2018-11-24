@@ -7,5 +7,28 @@ output: github_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(purrr)
+library(rvest)
+library(modelr)
 ```
+
+# Problem 1
+```{r}
+homicide_wp = 
+  read_csv(
+    "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>%
+  janitor::clean_names() %>% 
+  mutate(city_state = str_c(city, state, sep = ", ")) %>%
+  mutate(solved = ifelse(disposition == "Closed by arrest", "solved", "not solved")) %>% 
+  filter(!city_state == "Dallas, TX", !city_state == "Phoenix, AZ", !city_state == "Kansas City, MO", !city_state == "Tulsa, AL") %>% 
+  
+  mutate(victim_race = ifelse(victim_race == "White", "White", "Non-White"),
+  fct_relevel(victim_race, "White", "Non-White")) %>% 
+  mutate(as.numeric(victim_age))
+
+#Need to still make victim age numeric
+```
+
+
 
