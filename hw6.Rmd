@@ -21,11 +21,12 @@ homicide_wp =
   janitor::clean_names() %>% 
   mutate(city_state = str_c(city, state, sep = ", ")) %>%
   mutate(solved = as.numeric(disposition == "Closed by arrest"), 
-        victim_age = as.numeric(victim_age)) %>%  
-  filter(!city_state == "Dallas, TX", !city_state == "Phoenix, AZ", !city_state == "Kansas City, MO", !city_state == "Tulsa, AL") %>% 
+         victim_age = as.numeric(victim_age)) %>%  
+  filter(!city_state == "Dallas, TX", !city_state == "Phoenix, AZ", 
+         !city_state == "Kansas City, MO", !city_state == "Tulsa, AL") %>% 
   
   mutate(victim_race = ifelse(victim_race == "White", "White", "Non-White"),
-  fct_relevel(victim_race, "White", "Non-White"))
+                            fct_relevel(victim_race, "White", "Non-White"))
 ```
 
 Baltimore only
@@ -57,11 +58,22 @@ baltimore_logistic %>%
 GLM for each city
 
 ```{r}
-all_cities = homicide_wp %>% 
+all_cities_nested = 
+  homicide_wp %>% 
   group_by(city_state) %>% 
-  glm(solved ~ victim_age + victim_sex + victim_race, 
+  nest() %>%
+  mutate(model = map(data, ~glm(solved ~ victim_age + victim_sex + victim_race, 
     data = all_cities, 
-    family = binomial())
+    family = binomial()))) %>% 
+  unnest() %>%
+  gather()
+  
+```
+
+Plot
+```{r}
+all_cities_nested %>% 
+  ggplot(aes())
 ```
 
 Now run glm for each of the cities in your dataset, and extract the adjusted odds ratio (and CI) for solving homicides comparing non-white victims to white victims. Do this within a “tidy” pipeline, making use of purrr::map, list columns, and unnest as necessary to create a dataframe with estimated ORs and CIs for each city.
@@ -72,12 +84,14 @@ Create a plot that shows the estimated ORs and CIs for each city. Organize citie
 ```{r}
 birth_data = read_csv("./birthweight.csv") %>% 
     janitor::clean_names() %>%
-    mutate(babysex = as.factor(babysex), 
-           mrace = as.factor(mrace), 
-           frace = as.factor(frace)) %>%
-  
+    mutate(babysex = as.factor(babysex), mrace = as.factor(mrace), race = as.factor(frace)) %>%
+
   
     
 ```
+Two plots you have to show in addition to your proposed regression model for birthweight: 
+
+- One using length at birth and gestational age as predictors (main effects only)
+- One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
 
 
