@@ -95,11 +95,14 @@ birth_data = read_csv("./birthweight.csv") %>%
 Regression model: 
 ```{r}
 birth_data %>% 
-  ggplot(aes(x = bwt)) +  
-         geom_point()
+  ggplot(aes(x = ppbmi, y = bwt)) +  
+         geom_point() + 
+         theme_bw()
 
-#what 
+
 ```
+Now i have to make a model to somehow predict this relationship
+
 
 Two plots you have to show in addition to your proposed regression model for birthweight: 
 
