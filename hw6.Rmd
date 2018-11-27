@@ -8,8 +8,6 @@ output: github_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
-library(purrr)
-library(rvest)
 library(modelr)
 ```
 
@@ -63,15 +61,23 @@ GLM for each city
   nest() %>%
   mutate(model = map(data, ~glm(solved ~ victim_age + victim_sex + victim_race, 
     data = ., family = binomial()))) %>% 
+  mutate(model = map(model, broom::tidy)) %>% 
+  select(-data) %>% 
   unnest() %>%
-  gather()
+  mutate(OR = exp(estimate), 
+        conf.low = exp(estimate - 1.96*std.error),
+        conf.high = exp(estimate + 1.96*std.error)) %>% 
+  filter(term == "victim_raceWhite") %>%       
   
+
+  ggplot(aes(x = city_state, y = OR), color = OR) +
+    geom_point() +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
+  coord_flip()
+
 ```
 
-Plot
-```{r}
-all_cities_nested %>% 
-  ggplot(aes())
+
 ```
 
 Now run glm for each of the cities in your dataset, and extract the adjusted odds ratio (and CI) for solving homicides comparing non-white victims to white victims. Do this within a “tidy” pipeline, making use of purrr::map, list columns, and unnest as necessary to create a dataframe with estimated ORs and CIs for each city.
