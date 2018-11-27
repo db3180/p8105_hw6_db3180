@@ -1,18 +1,12 @@
----
-title: "p8105_hw6"
-author: "Divya Bisht"
-date: "11/24/2018"
-output: github_document
----
+p8105\_hw6
+================
+Divya Bisht
+11/24/2018
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(tidyverse)
-library(modelr)
-```
+Problem 1
+=========
 
-# Problem 1
-```{r}
+``` r
 homicide_wp = 
   read_csv(
     "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv") %>%
@@ -27,22 +21,42 @@ homicide_wp =
                             fct_relevel(victim_race, "Non-White", "White"))
 ```
 
+    ## Parsed with column specification:
+    ## cols(
+    ##   uid = col_character(),
+    ##   reported_date = col_integer(),
+    ##   victim_last = col_character(),
+    ##   victim_first = col_character(),
+    ##   victim_race = col_character(),
+    ##   victim_age = col_character(),
+    ##   victim_sex = col_character(),
+    ##   city = col_character(),
+    ##   state = col_character(),
+    ##   lat = col_double(),
+    ##   lon = col_double(),
+    ##   disposition = col_character()
+    ## )
+
+    ## Warning in evalq(as.numeric(victim_age), <environment>): NAs introduced by
+    ## coercion
+
 Baltimore only
-```{r}
+
+``` r
 baltimore_homicide = 
   homicide_wp %>%
   filter(city == "Baltimore") %>% 
   select(solved, victim_age, victim_race, victim_sex)
 ```
 
-```{r}
+``` r
 baltimore_logistic = 
   glm(solved ~ victim_age + victim_sex + victim_race, 
     data = baltimore_homicide, 
     family = binomial())
 ```
 
-```{r}
+``` r
 baltimore_logistic %>% 
   broom::tidy() %>% 
   mutate(OR = exp(estimate), 
@@ -50,12 +64,15 @@ baltimore_logistic %>%
         conf.high = exp(estimate + 1.96*std.error)) %>%
   filter(term == "victim_raceWhite") %>%       
   knitr::kable(digits = 3)
-  
 ```
+
+| term              |  estimate|  std.error|  statistic|  p.value|     OR|  conf.low|  conf.high|
+|:------------------|---------:|----------:|----------:|--------:|------:|---------:|----------:|
+| victim\_raceWhite |     -0.82|      0.175|     -4.694|        0|  0.441|     0.313|       0.62|
 
 GLM for each city
 
-```{r}
+``` r
   homicide_wp %>% 
   group_by(city_state) %>% 
   nest() %>%
@@ -74,31 +91,47 @@ GLM for each city
     geom_point() +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
   coord_flip()
-
 ```
 
-## Problem 2
-```{r}
+![](hw6_files/figure-markdown_github/unnamed-chunk-5-1.png)
+
+Problem 2
+---------
+
+``` r
 birth_data = read_csv("./birthweight.csv") %>% 
     janitor::clean_names() %>%
     mutate(babysex = as.factor(babysex), mrace = as.factor(mrace), frace = as.factor(frace))
 ```
 
-Looking at bwt: 
-```{r}
+    ## Parsed with column specification:
+    ## cols(
+    ##   .default = col_integer(),
+    ##   gaweeks = col_double(),
+    ##   ppbmi = col_double(),
+    ##   smoken = col_double()
+    ## )
+
+    ## See spec(...) for full column specifications.
+
+Looking at bwt:
+
+``` r
 birth_data %>% 
   ggplot(aes(x = ppbmi, y = bwt)) +  
          geom_point() + 
          theme_bw()
 ```
 
-Model
-```{r}
+![](hw6_files/figure-markdown_github/unnamed-chunk-7-1.png)
 
+Model
+
+``` r
 fit = lm(bwt ~ ppbmi + delwt + smoken, data = birth_data)
 ```
 
-```{r}
+``` r
 birth_data %>% 
   add_predictions(fit) %>% 
   add_residuals(fit) %>% 
@@ -106,13 +139,16 @@ birth_data %>%
   geom_point()
 ```
 
-```{r}
+![](hw6_files/figure-markdown_github/unnamed-chunk-9-1.png)
+
+``` r
 cv_df = 
   crossv_mc(birth_data, 100) 
 ```
 
-Two more models: 
-```{r}
+Two more models:
+
+``` r
 cv_df = 
   cv_df %>% 
   mutate(lin_mod = map(train, ~lm(bwt ~ ppbmi + delwt + smoken, data = .)),
@@ -129,7 +165,13 @@ cv_df %>%
          model = fct_inorder(model)) %>% 
   ggplot(aes(x = model, y = rmse)) + 
   geom_violin()
-
 ```
 
+![](hw6_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
+Now i have to make a model to somehow predict this relationship
+
+Two plots you have to show in addition to your proposed regression model for birthweight:
+
+-   One using length at birth and gestational age as predictors (main effects only)
+-   One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
