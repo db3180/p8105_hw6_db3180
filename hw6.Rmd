@@ -58,13 +58,11 @@ baltimore_logistic %>%
 GLM for each city
 
 ```{r}
-all_cities_nested = 
   homicide_wp %>% 
   group_by(city_state) %>% 
   nest() %>%
   mutate(model = map(data, ~glm(solved ~ victim_age + victim_sex + victim_race, 
-    data = all_cities, 
-    family = binomial()))) %>% 
+    data = ., family = binomial()))) %>% 
   unnest() %>%
   gather()
   
@@ -86,9 +84,17 @@ birth_data = read_csv("./birthweight.csv") %>%
     janitor::clean_names() %>%
     mutate(babysex = as.factor(babysex), mrace = as.factor(mrace), race = as.factor(frace)) %>%
 
-  
-    
 ```
+
+Regression model: 
+```{r}
+birth_data %>% 
+  ggplot(aes(x = bwt)) +  
+         geom_point()
+
+#what 
+```
+
 Two plots you have to show in addition to your proposed regression model for birthweight: 
 
 - One using length at birth and gestational age as predictors (main effects only)
