@@ -74,8 +74,11 @@ GLM for each city
     geom_point() +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
   coord_flip()
-
 ```
+
+Tampla, Florida had the greatest OR for solving homicides while Boston, Massachusetts has the lowest OR for solving homicides when comparing non-whites to whites. 
+
+
 
 ## Problem 2
 ```{r}
