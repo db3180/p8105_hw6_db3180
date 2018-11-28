@@ -85,7 +85,7 @@ GLM for each city
         conf.low = exp(estimate - 1.96*std.error),
         conf.high = exp(estimate + 1.96*std.error)) %>% 
   filter(term == "victim_raceWhite") %>%       
-  
+  mutate(city_state = fct_reorder(city_state, OR)) %>%
 
   ggplot(aes(x = city_state, y = OR), color = OR) +
     geom_point() +
@@ -131,6 +131,10 @@ Model
 fit = lm(bwt ~ ppbmi + delwt + smoken, data = birth_data)
 ```
 
+Based on a literature review about about birthweight, I considered using mother’s pre-pregnancy BMI, mother’s weight at delivery (pounds) and average number of cigarettes smoked per day during pregnancy, average number of cigarettes smoked per day during pregnancy.
+
+-<https://www.ncbi.nlm.nih.gov/pubmed/29397484> -<https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3640239/> -<https://www.ncbi.nlm.nih.gov/pubmed/16260516>
+
 ``` r
 birth_data %>% 
   add_predictions(fit) %>% 
@@ -155,8 +159,8 @@ cv_df =
          birth_length = map(train, ~lm(bwt ~ blength + gaweeks, data = .)),
          head_circ = map(train, ~lm(bwt ~ bhead + blength + babysex + bhead*blength + bhead*babysex + blength*babysex, data = .))) %>% 
   mutate(rmse_lin = map2_dbl(lin_mod, test, ~rmse(model = .x, data = .y)),
-         rmse_nonlin = map2_dbl(birth_length, test, ~rmse(model = .x, data = .y)),
-         rmse_wiggly = map2_dbl(head_circ, test, ~rmse(model = .x, data = .y))) 
+         rmse_birth_length = map2_dbl(birth_length, test, ~rmse(model = .x, data = .y)),
+         rmse_head_circ = map2_dbl(head_circ, test, ~rmse(model = .x, data = .y))) 
 
 cv_df %>% 
   select(starts_with("rmse")) %>% 
@@ -169,9 +173,4 @@ cv_df %>%
 
 ![](hw6_files/figure-markdown_github/unnamed-chunk-11-1.png)
 
-Now i have to make a model to somehow predict this relationship
-
-Two plots you have to show in addition to your proposed regression model for birthweight:
-
--   One using length at birth and gestational age as predictors (main effects only)
--   One using head circumference, length, sex, and all interactions (including the three-way interaction) between these
+Based on the plot above, the model with the interaction terms seems to be the best model because it has the lowest rmse.
